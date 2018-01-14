@@ -7,7 +7,7 @@ import (
 )
 
 
-var client = NewClient("http://localhost:2100", new(http.Client))
+var client = NewClient("http://localhost:5000", new(http.Client))
 
 func TestGetAllBooksSuccess(t *testing.T) {
 	cfg := NewConfig("/api/v1/books").Header("Accept", "application/json")

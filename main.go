@@ -26,5 +26,5 @@ func Router() *gin.Engine {
 func main() {
 	app.InitDB()
 	router := Router()
-	router.Run(":2100")
+	router.Run(":5000")
 }

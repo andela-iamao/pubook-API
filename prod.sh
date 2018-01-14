@@ -2,4 +2,4 @@
 
 export GIN_MODE=release
 
-go run main.go
+go build -o bin/application main.go
