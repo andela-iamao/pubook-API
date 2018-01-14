@@ -1,0 +1,24 @@
+# Start from a Debian image with the latest version of Go installed
+# and a workspace (GOPATH) configured at /go.
+FROM golang
+
+# Copy the local package files to the container's workspace.
+ADD . /go/src/github.com/andela-iamao/pubook-api
+
+# Build the outyet command inside the container.
+# (You may fetch or manage dependencies here,
+# either manually or with a tool like "godep".)
+RUN go get github.com/astaxie/beego/orm
+RUN go get github.com/gin-gonic/gin
+RUN go get github.com/lib/pq
+RUN go get github.com/emicklei/forest
+
+RUN go install github.com/andela-iamao/pubook-api
+
+RUN ls /go
+
+# Run the outyet command by default when the container starts.
+ENTRYPOINT /go/bin/pubook-api
+
+# Document that the service listens on port 8080.
+EXPOSE 8080

@@ -8,3 +8,5 @@ go get github.com/gin-gonic/gin
 go get github.com/astaxie/beego/orm
 
 go build -o bin/application main.go
+
+./bin/application
