@@ -13,6 +13,11 @@ RUN go get github.com/gin-gonic/gin
 RUN go get github.com/lib/pq
 RUN go get github.com/emicklei/forest
 
+ENV PUBOOK_HOST=
+ENV PUBOOK_USER=
+ENV PUBOOK_PASSWORD=
+ENV PUBOOK_DBNAME=
+
 RUN go install github.com/andela-iamao/pubook-api
 
 RUN ls /go
