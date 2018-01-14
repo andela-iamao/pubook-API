@@ -15,11 +15,12 @@ type Error struct {}
 
 var ORM orm.Ormer
 
-
+// Initialize DataBase ORM
 func InitDB() {
 	ORM = GetOrmObject()
 }
 
+// Get All books on the application
 func GetBooks(c *gin.Context) {
 
 	var books []Book
@@ -35,42 +36,43 @@ func GetBooks(c *gin.Context) {
 	metadata.total = res
 
 	c.JSON(http.StatusOK, gin.H{
-		"status": http.StatusOK,
 		"data": &books,
 		"metadata": metadata,
 	})
 }
 
+// Create a single book
 func CreateBook(c *gin.Context) {
 	var book Book
 	c.Bind(&book)
 
+	// Ensure both title and author are passed in
 	if book.Title != "" && book.Author != "" {
 		_, err := ORM.Insert(&book)
 		if err == nil {
-			c.JSON(http.StatusOK, gin.H{
-				"status": http.StatusOK,
+			c.JSON(http.StatusCreated, gin.H{
 				"title": book.Title,
 				"author": book.Author,
 			})
 		} else {
-			checkErr(err, "Creation failed")
+			Error{}.serverError(c)
 		}
 	} else {
 		c.JSON(422, gin.H{"error": "fields are empty"})
 	}
 }
 
+// Get a book by its ID
 func GetBook(c *gin.Context) {
+	// Check if the parameter passed into the URL is valid
 	if book, err := checkParam(c); err == nil {
 		read_error := ORM.Read(&book)
+		// If book does not exist
 		if read_error == orm.ErrNoRows {
 			Error{}.notFound(c)
 			return
-		} else if read_error != nil {
-			c.JSON(404, gin.H{
-				"error": "Error while fetching users",
-			})
+		} else if read_error != nil { // If some other sort of unknown error
+			Error{}.serverError(c)
 			return
 		} else {
 			c.JSON(200, gin.H{"book": book})
@@ -80,18 +82,20 @@ func GetBook(c *gin.Context) {
 	}
 }
 
+// Update the content of a book
 func UpdateBook(c *gin.Context) {
 	var body Book
+	// Check if parameter url is valid
 	book, err := checkParam(c); if err == nil {
 		c.Bind(&body)
 		readError := ORM.Read(&book)
 		if readError == nil {
 			toUpdate := []string{}
-			if len(body.Author) > 0 {
+			if len(body.Author) > 0 { // check if user is updating the author field
 				book.Author = body.Author
 				toUpdate = append(toUpdate, "Author")
 			}
-			if len(body.Title) > 0 {
+			if len(body.Title) > 0 { // check if user is updating the title field
 				book.Title = body.Title
 				toUpdate = append(toUpdate, "Title")
 			}
@@ -106,6 +110,7 @@ func UpdateBook(c *gin.Context) {
 	Error{}.notFound(c)
 }
 
+// Delete a book from the platform
 func DeleteBook(c *gin.Context) {
 	if book, err := checkParam(c); err == nil {
 		readError := ORM.Read(&book)
@@ -123,6 +128,7 @@ func DeleteBook(c *gin.Context) {
 	Error{}.notFound(c)
 }
 
+// Check the validity of a URL parameter
 func checkParam(c *gin.Context) (Book, error) {
 	param, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -132,11 +138,13 @@ func checkParam(c *gin.Context) (Book, error) {
 	return book, nil
 }
 
+// Handle 404 errors
 func (e Error) notFound(c *gin.Context) {
 	c.JSON(404, gin.H{ "error": "resource not found" })
 	return
 }
 
+// Handle internal server errors
 func (e Error) serverError(c *gin.Context) {
 	c.JSON(500, gin.H{"error": "an unexpected error occurred please try again in a few minute"})
 	return

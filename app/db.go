@@ -4,6 +4,7 @@ import (
 	"log"
 	_ "github.com/lib/pq"
 	"github.com/astaxie/beego/orm"
+	"github.com/gin-gonic/gin"
 )
 
 type Book struct {
@@ -19,14 +20,21 @@ func (u *Book) TableName() string {
 }
 
 func init() {
+	var force bool
+	log.Println(gin.Mode())
+	if gin.Mode() == "test" {
+		force = true
+	} else {
+		force = false
+	}
 	orm.RegisterDriver("postgres", orm.DRPostgres)
 	orm.RegisterDataBase(
 		"default",
 		"postgres",
-		"user=postgres dbname=pubook-db host=127.0.0.1 sslmode=disable",
+		"user=postgres dbname=pubook-db-"+gin.Mode()+" host=127.0.0.1 sslmode=disable",
 		20)
 	orm.RegisterModel(new(Book))
-	err := orm.RunSyncdb("default", false, true)
+	err := orm.RunSyncdb("default", force, true)
 	if err != nil {
 		log.Fatal(err)
 	}
